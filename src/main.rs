@@ -3,6 +3,7 @@
 use std::io;
 use std::io::Result;
 use std::process::exit;
+use std::io::Read;
 
 use image::png::PngEncoder;
 use image::ColorType;

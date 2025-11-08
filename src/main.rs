@@ -34,6 +34,11 @@ fn generate(input: &[u8]) -> Result<()> {
 fn hash() -> Result<[u8; 16]> {
     let input = io::stdin();
     let mut reader = input.lock();
+    
+    let mut buffer = Vec::new();
+    reader.read_to_end(&mut buffer)?;
+    eprintln!("Input bytes: {:02x?}", buffer);
+    
     let mut digest = Md5::new();
     io::copy(&mut reader, &mut digest)?;
 

@@ -59,7 +59,7 @@ jobs:
       - name: Install system dependencies (mingw, zip)
         run: |
           sudo apt-get update
-          sudo apt-get install -y mingw-w64 zip
+          sudo apt-get install -y mingw-w64 zip gcc-mingw-w64-x86-64 g++-mingw-w64-x86-64
 
       - name: Install Rust toolchain (stable)
         uses: actions-rs/toolchain@v1
@@ -71,7 +71,16 @@ jobs:
       - name: Add Windows targets
         run: rustup target add ${{ matrix.target }}
 
-      - name: Build (release) for target
+      - name: Build (release) for target (attempt static CRT)
+        env:
+          RUSTFLAGS: >-
+            -C target-feature=+crt-static
+            -C link-arg=-static
+            -C link-arg=-static-libgcc
+            -C link-arg=-static-libstdc++
+          CARGO_TARGET_X86_64_PC_WINDOWS_GNU_LINKER: x86_64-w64-mingw32-gcc
+          CC_x86_64_pc_windows_gnu: x86_64-w64-mingw32-gcc
+          CXX_x86_64_pc_windows_gnu: x86_64-w64-mingw32-g++
         run: cargo build --release --target ${{ matrix.target }}
 
       - name: Collect Windows executables and package

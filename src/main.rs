@@ -37,10 +37,11 @@ fn hash() -> Result<[u8; 16]> {
     
     let mut buffer = Vec::new();
     reader.read_to_end(&mut buffer)?;
+    eprintln!("Input string: '{}'", String::from_utf8_lossy(&buffer));
     eprintln!("Input bytes: {:02x?}", buffer);
     
     let mut digest = Md5::new();
-    io::copy(&mut reader, &mut digest)?;
+    digest.update(&buffer);
 
     let result = digest.finalize();
 

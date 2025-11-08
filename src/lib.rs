@@ -49,6 +49,7 @@ impl<'a> Identicon<'a> {
     }
 
     fn pixels(&self) -> [bool; 25] {
+        println!("Hash: {:02x?}", self.source);
         let mut nibbles = Nibbler::new(self.source).map(|x| x % 2 == 0);
         let mut pixels = [false; 25];
         for col in (0..3).rev() {

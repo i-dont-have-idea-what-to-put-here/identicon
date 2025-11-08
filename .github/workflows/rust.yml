@@ -46,62 +46,27 @@ jobs:
           command: fmt
           args: --all -- --check
 
-  cross-build-windows:
-    name: Cross-compile Windows binaries and upload
-    runs-on: ubuntu-latest
+  windows-build:
+    name: Build Windows binaries natively
+    runs-on: windows-latest
     strategy:
       matrix:
-        target:
-          - x86_64-pc-windows-gnu
+        target: [x86_64-pc-windows-msvc]
     steps:
-      - uses: actions/checkout@v2
-
-      - name: Install system dependencies (mingw, zip)
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y mingw-w64 zip gcc-mingw-w64-x86-64 g++-mingw-w64-x86-64
-
-      - name: Install Rust toolchain (stable)
+      - uses: actions/checkout@v4
+    
+      - name: Install Rust toolchain
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: stable
           override: true
-
-      - name: Add Windows targets
-        run: rustup target add ${{ matrix.target }}
-
-      - name: Build (release) for target (attempt static CRT)
-        env:
-          RUSTFLAGS: >-
-            -C target-feature=+crt-static
-            -C link-arg=-static
-            -C link-arg=-static-libgcc
-            -C link-arg=-static-libstdc++
-          CARGO_TARGET_X86_64_PC_WINDOWS_GNU_LINKER: x86_64-w64-mingw32-gcc
-          CC_x86_64_pc_windows_gnu: x86_64-w64-mingw32-gcc
-          CXX_x86_64_pc_windows_gnu: x86_64-w64-mingw32-g++
+    
+      - name: Build release
         run: cargo build --release --target ${{ matrix.target }}
-
-      - name: Collect Windows executables and package
-        run: |
-          set -e
-          mkdir -p dist
-          shopt -s nullglob || true
-          for f in target/${{ matrix.target }}/release/*.exe; do
-            cp "$f" dist/
-          done
-          if compgen -G "dist/*.exe" > /dev/null; then
-            cd dist
-            zip -r ../artifact-${{ matrix.target }}.zip .
-            cd ..
-          else
-            echo "No .exe artifacts found for target ${{ matrix.target }}"
-            touch artifact-${{ matrix.target }}.zip
-          fi
-
-      - name: Upload built artifact
+    
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: identicon-${{ matrix.target }}
-          path: artifact-${{ matrix.target }}.zip
+          path: target\${{ matrix.target }}\release\

@@ -1,9 +1,9 @@
 #![cfg(feature = "build-bin")]
 
 use std::io;
+use std::io::Read;
 use std::io::Result;
 use std::process::exit;
-use std::io::Read;
 
 use image::png::PngEncoder;
 use image::ColorType;
